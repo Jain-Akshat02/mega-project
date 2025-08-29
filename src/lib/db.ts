@@ -1,46 +1,31 @@
-// lib/dbConnect.js
-
 import mongoose from "mongoose";
-import dotenv from "dotenv";
-
-dotenv.config();
 
 declare global {
+  // allow global `mongoose` cache
   var mongoose: {
     conn: typeof mongoose | null;
     promise: Promise<typeof mongoose> | null;
   };
 }
 
-const MONGO_URI = process.env.MONGO_URI;
+const MONGO_URI = process.env.MONGO_URI
 
-if (!MONGO_URI) {
-  throw new Error(
-    "Please define the MONGO_URI environment variable inside .env.local"
-  );
-}
 
-let cached = (global as any).mongoose;
+let cached = (globalThis as typeof globalThis & { mongoose?: any }).mongoose;
 
 if (!cached) {
   cached = global.mongoose = { conn: null, promise: null };
 }
 
 async function dbConnect() {
-  if (cached.conn) {
-    return cached.conn;
-  }
-  if (!MONGO_URI) {
-  throw new Error(
-    "Please define the MONGODB_URI environment variable inside .env.local"
-  );
-}
+  if (cached.conn) return cached.conn;
+
   if (!cached.promise) {
-    cached.promise = mongoose.connect(MONGO_URI).then((mongoose) => {
-      return mongoose;
-    });
+    cached.promise = mongoose.connect(MONGO_URI!).then((mongoose) => mongoose);
   }
   cached.conn = await cached.promise;
+  console.log("MongoDB connected");
+  
   return cached.conn;
 }
 

@@ -1,8 +1,14 @@
-import dbConnect from '@/lib/db';
+'use server'
+import 'server-only'
 import { SignupFormSchema, FormState } from '@/lib/definitions'
 import bcrypt from 'bcryptjs';
 import User from '@/models/userModel'
 export async function signup(state: FormState, formData: FormData) {
+  const [{ default: dbConnect }, { default: User }, bcrypt] = await Promise.all([
+    import('@/lib/db'),
+    import('@/models/userModel'),
+    import('bcryptjs'),
+  ])
   // Validate form fields
   const validatedFields = SignupFormSchema.safeParse({
     name: formData.get('name'),
